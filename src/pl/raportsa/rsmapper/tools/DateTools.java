@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
  */
 public class DateTools {
 
+    public static SimpleDateFormat sdfDate= new SimpleDateFormat("yyyy-MM-dd");
     public static SimpleDateFormat sdfDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public static SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss");
 

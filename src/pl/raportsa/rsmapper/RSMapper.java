@@ -1,6 +1,7 @@
 package pl.raportsa.rsmapper;
 
 import pl.raportsa.rsmapper.annotations.Column;
+
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
@@ -16,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
 import pl.raportsa.rsmapper.exceptions.ConvertException;
 import pl.raportsa.rsmapper.exceptions.ParseTypeException;
 import pl.raportsa.rsmapper.exceptions.SetterException;
@@ -81,7 +83,7 @@ public class RSMapper<T> {
                 .stream()
                 .filter(s -> s.equalsIgnoreCase(columnName))
                 .findFirst();
-        return column.isPresent() ? valueMap.get(column.get()) : null;
+        return column.map(valueMap::get).orElse(null);
 
     }
 
@@ -91,7 +93,7 @@ public class RSMapper<T> {
         Constructor<? extends Object> cons = clazz.getConstructor();
         o = cons.newInstance();
         Field[] declaredFields = clazz.getDeclaredFields();
-        for (Field field : Arrays.asList(declaredFields)) {
+        for (Field field : declaredFields) {
             String columnName = getColumnName(field);
             String value = getValuesFromMap(columnName, valueMap);
             if (Objects.isNull(value)) {
@@ -134,11 +136,19 @@ public class RSMapper<T> {
                 case "java.lang.Double":
                     return Double.valueOf(value);
                 case "java.sql.Date":
-                    return new java.sql.Date(DateTools.sdfDateTime.parse(value).getTime());
+                    try {
+                        return new java.sql.Date(DateTools.sdfDateTime.parse(value).getTime());
+                    } catch (Exception e) {
+                        return new java.sql.Date(DateTools.sdfDate.parse(value).getTime());
+                    }
                 case "java.sql.Time":
                     return new java.sql.Time(DateTools.sdfTime.parse(value).getTime());
                 case "java.util.Date":
-                    return DateTools.sdfDateTime.parse(value);
+                    try {
+                        return DateTools.sdfDateTime.parse(value);
+                    } catch (Exception e) {
+                        return DateTools.sdfDate.parse(value);
+                    }
                 case "java.lang.String":
                     return value;
                 case "java.sql.Timestamp":
